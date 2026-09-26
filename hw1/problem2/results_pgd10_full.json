@@ -1,0 +1,57 @@
+{
+  "dataset": "CIFAR-10 official test set",
+  "device": "mps",
+  "batch_size": 32,
+  "steps": 10,
+  "random_start": false,
+  "step_size": "epsilon/4",
+  "epsilon_linf": 0.03137254901960784,
+  "epsilon_l2": 0.75,
+  "clean_test_size": 10000,
+  "attack_sample_size": 10000,
+  "attack_sample_seed": 42,
+  "models": {
+    "Linf": {
+      "clean_full": 0.8281,
+      "clean_attack_subset": 0.8281,
+      "linf": 0.5121,
+      "l2": 0.4883,
+      "union": 0.4705,
+      "counts": {
+        "clean": 8281,
+        "linf": 5121,
+        "l2": 4883,
+        "union": 4705,
+        "total": 10000
+      }
+    },
+    "L2": {
+      "clean_full": 0.8875,
+      "clean_attack_subset": 0.8875,
+      "linf": 0.3085,
+      "l2": 0.5438,
+      "union": 0.3085,
+      "counts": {
+        "clean": 8875,
+        "linf": 3085,
+        "l2": 5438,
+        "union": 3085,
+        "total": 10000
+      }
+    },
+    "RAMP": {
+      "clean_full": 0.8119,
+      "clean_attack_subset": 0.8119,
+      "linf": 0.4977,
+      "l2": 0.5965,
+      "union": 0.4976,
+      "counts": {
+        "clean": 8119,
+        "linf": 4977,
+        "l2": 5965,
+        "union": 4976,
+        "total": 10000
+      }
+    }
+  }
+}
