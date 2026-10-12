@@ -1,0 +1,40 @@
+def Shape as (Float l, Float u, PolyExp L, PolyExp U, PolyExp La){[(curr[l]<=curr),(curr[u]>=curr),(curr[L]<=curr),(curr[U]>=curr),(curr[La]<=curr)]};
+
+func simplify_lower(Neuron n, Float coeff) = coeff >= 0.0 ? coeff * n[l] : coeff * n[u];
+func simplify_upper(Neuron n, Float coeff) = coeff >= 0.0 ? coeff * n[u] : coeff * n[l];
+
+func replace_lower(Neuron n, Float coeff) = coeff >= 0.0 ? coeff * n[L] : coeff * n[U];
+func replace_upper(Neuron n, Float coeff) = coeff >= 0.0 ? coeff * n[U] : coeff * n[L];
+func replace_lower_alt(Neuron n, Float coeff) = coeff >= 0.0 ? coeff * n[La] : coeff * n[U];
+func replace_upper_alt(Neuron n, Float coeff) = coeff >= 0.0 ? coeff * n[U] : coeff * n[La];
+
+func priority(Neuron n) = n[layer];
+func priority2(Neuron n, Float c) = -n[layer];
+func stop(Neuron n) = false;
+func stop_traverse(Neuron n, Float c) = false;
+
+func lower_main(PolyExp e, Neuron n) = (e.traverse(backward, priority2, stop_traverse, replace_lower){e <= n}).map(simplify_lower);
+func upper_main(PolyExp e, Neuron n) = (e.traverse(backward, priority2, stop_traverse, replace_upper){e >= n}).map(simplify_upper);
+func lower_alt(PolyExp e, Neuron n) = (e.traverse(backward, priority2, stop_traverse, replace_lower_alt){e <= n}).map(simplify_lower);
+func upper_alt(PolyExp e, Neuron n) = (e.traverse(backward, priority2, stop_traverse, replace_upper_alt){e >= n}).map(simplify_upper);
+
+func larger(Float a, Float b) = a >= b ? a : b;
+func smaller(Float a, Float b) = a <= b ? a : b;
+func lower_bound(PolyExp e, Neuron n) = larger(lower_main(e, n), lower_alt(e, n));
+func upper_bound(PolyExp e, Neuron n) = smaller(upper_main(e, n), upper_alt(e, n));
+
+func relu(Float x) = x >= 0.0 ? x : 0.0;
+func relu_lower(Neuron n) = n[l] + n[u] >= 0.0 ? n : 0.0;
+func relu_lower_alt(Neuron n) = n[l] >= 0.0 ? n : 0.0;
+func relu_upper(Neuron n) = n[l] >= 0.0 ? n : (n[u] <= 0.0 ? 0.0 : ((n[u] / (n[u] - n[l])) * n) - ((n[u] * n[l]) / (n[u] - n[l])));
+
+transformer two_lower{
+    Affine -> (lower_bound(prev.dot(curr[weight]) + curr[bias], curr),
+               upper_bound(prev.dot(curr[weight]) + curr[bias], curr),
+               prev.dot(curr[weight]) + curr[bias],
+               prev.dot(curr[weight]) + curr[bias],
+               prev.dot(curr[weight]) + curr[bias]);
+    Relu -> (relu(prev[l]), relu(prev[u]), relu_lower(prev), relu_upper(prev), relu_lower_alt(prev));
+}
+
+flow(forward, priority, stop, two_lower);
